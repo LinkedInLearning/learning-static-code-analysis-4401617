@@ -1,0 +1,31 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  directory: $(System.DefaultWorkingDirectory)/Deployment/1_deployment_scripts
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: BuildJob
+    displayName: Build Job
+    steps:
+    - task: CopyFiles@2
+      displayName: Copy Bicep files to artifact staging directory
+      inputs:
+        SourceFolder: $(directory)
+        Contents: '**/*'
+        TargetFolder: $(System.DefaultWorkingDirectory)
+    - template: checkov/security.yaml
+      parameters:
+        directory: $(directory)
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        PathtoPublish: $(System.DefaultWorkingDirectory)/checkov
+        ArtifactName: 'bicep'
+        
