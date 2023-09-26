@@ -1,31 +1,33 @@
-trigger:
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: 
 - main
 
 pool:
   vmImage: ubuntu-latest
 
 variables:
-  directory: $(System.DefaultWorkingDirectory)/Deployment/1_deployment_scripts
-
+  directory: $(System.DefaultWorkingDirectory)
 stages:
 - stage: Build
-  displayName: Build stage
+  displayName: Build Stage
   jobs:
   - job: BuildJob
     displayName: Build Job
     steps:
     - task: CopyFiles@2
-      displayName: Copy Bicep files to artifact staging directory
       inputs:
-        SourceFolder: $(directory)
+        SourceFolder: '$(directory)'
         Contents: '**/*'
-        TargetFolder: $(System.DefaultWorkingDirectory)
+        TargetFolder: '$(directory)'
     - template: checkov/security.yaml
       parameters:
         directory: $(directory)
     - task: PublishBuildArtifacts@1
-      displayName: Publish Artifact
       inputs:
-        PathtoPublish: $(System.DefaultWorkingDirectory)/checkov
-        ArtifactName: 'bicep'
-        
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/checkov/checkreport.xml'
+        ArtifactName: 'checkovresults'
+        publishLocation: 'Container'
